@@ -16,11 +16,5 @@ module.exports = {
     });
 
     return res.json(irradiacao);
-  },
-
-  async getIrradiation(lat, long) {
-    // obtém irradiação média anual com base na longitude, latitude
-    const irradiation = (await Irradiation.findOne({ long, lat })).irradiation;
-    return irradiation;
   }
 };

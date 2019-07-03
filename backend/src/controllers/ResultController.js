@@ -1,7 +1,18 @@
 const Result = require('../models/Result');
-const IrradiationController = require('./IrradiationController');
-const CostController = require('./CostController');
-const LocationController = require('./LocationController');
+const Irradiation = require('../models/Irradiation');
+const Cost = require('../models/Cost');
+
+const API_KEY = 'AIzaSyA_uWwof6O6vJ4W6vJLrbwNHDLYCxVlC_U';
+
+const NodeGeocoder = require('node-geocoder');
+const options = {
+  provider: 'google',
+  httpAdapter: 'https',
+  apiKey: API_KEY,
+  formatter: null,
+  region: 'BR'
+};
+const geocoder = NodeGeocoder(options);
 
 module.exports = {
   async index(req, res) {
@@ -11,17 +22,22 @@ module.exports = {
 
   async create(req, res) {
     const { averageConsumption, location } = req.body;
-    const locationController = new LocationController(location);
+    var long, lat, state;
 
-    console.log(locationController.values);
-    const lat = locationController.values.lat;
-    const long = locationController.values.long;
-    const state = locationController.values.state;
+    geocoder.geocode(location, async (err, data) => {
+      if (err || !data.length) {
+        return { message: err.message };
+      }
+      lat = Math.trunc(data[0].latitude);
+      long = Math.trunc(data[0].longitude);
+      state = data[0].administrativeLevels.level1short;
 
-    if (lat != 0 && long != 0 && state != '') {
-      const irradiation = await IrradiationController.getIrradiation(lat, long);
+      console.log(`lat: ${lat}, long: ${long}, state: ${state}`);
+      const irradiation = (await Irradiation.findOne({ long, lat }))
+        .irradiation;
       const dailyIrradiation = irradiation / 365;
-      const cost = await CostController.getCost(state);
+
+      const cost = (await Cost.findOne({ state })).cost;
 
       // irradiação média diária * área do painel * eficiência do painel * 75% * 30
       const monthlyEnergyPerPanel =
@@ -42,8 +58,6 @@ module.exports = {
       });
 
       return res.json(result);
-    } else {
-      return res.json({ message: 'something went wrong' });
-    }
+    });
   }
 };

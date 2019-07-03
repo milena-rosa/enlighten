@@ -15,10 +15,5 @@ module.exports = {
     });
 
     return res.json(c);
-  },
-
-  async getCost(state) {
-    const cost = (await Cost.findOne({ state })).cost;
-    return cost;
   }
 };
