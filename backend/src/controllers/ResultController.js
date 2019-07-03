@@ -51,7 +51,8 @@ module.exports = {
       let monthlyEnergySystem = numberOfPanels * monthlyEnergyPerPanel;
 
       let payback = Math.round(initialCosts / (monthlyEnergySystem * cost));
-
+      
+      console.log(`nPanels: ${numberOfPanels}, payback: ${payback}`);
       const result = await Result.create({
         numberOfPanels,
         payback
