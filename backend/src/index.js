@@ -12,6 +12,6 @@ server.use(express.json());
 
 server.use(require('./routes'));
 
-server.listen(80, () => {
+server.listen(3333, () => {
   console.log('server running.');
 });
